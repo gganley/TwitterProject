@@ -46,70 +46,82 @@ func RootHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func PostSearchHandler(w http.ResponseWriter, r *http.Request) {
+	// Parse query information
+	timeOfExecution := time.Now()
+	var response DataRequestParam
+
+	err := json.NewDecoder(r.Body).Decode(&response)
+	if err != nil {
+		panic(err)
+	}
+
+	// Get tweets
+	results := paginateTwitter(response)
+
+	tally := make(map[string]int)
+
+	// Paginate
+	for _, tweet := range results {
+		var text string
+
+		// So twitter decided to go from 140 char limit to a 240 char limit. Instead of versioning their API they
+		// decided it would be easier to add an embedded field. This is easy to deal with in weakly typed language
+		// but makes it annoying in Go
+		if tweet.ExtendedTweet.FullText != "" {
+			text = tweet.ExtendedTweet.FullText
+		} else {
+			text = tweet.Text
+		}
+
+		for _, word := range strings.Fields(text) {
+			tally[word] += 1
+		}
+	}
+
+	// Flip the tally. The value is the list of words that occur the key's number of times
+	flippedTally := make(map[int][]string)
+
+	for key, value := range tally {
+		flippedTally[value] = append(flippedTally[value], key)
+	}
+
+	keys := make([]int, 0, len(flippedTally))
+
+	for k := range flippedTally {
+		keys = append(keys, k)
+	}
+
+	// I coudn't find a way to range through a reverse sorted int slice so I had to sort it then index through it reverse
+	sort.Sort(sort.IntSlice(keys))
+
+	// i keeps track of the fact that I'm only tracking 10 words, so if there are 11 words that occur the equal,
+	// greatest amount then they will be the only ones included
+	i := 0
+	// This is initiated to 10 so that even if there are 9 words it won't mess with indexing
+	wordCount := make([]WordCount, 10)
+
+	for j := len(keys) - 1; j >= 0; j-- {
+		for _, val := range flippedTally[keys[j]] {
+			if i <= 9 {
+				wordCount[i] = WordCount{val, tally[val]}
+				i++
+			}
+		}
+	}
+
 	projectID := os.Getenv("PROJECT_ID")
 
+	// Open firestore
 	ctx := context.Background()
 	client, err := firestore.NewClient(ctx, projectID)
 	if err != nil {
 		log.Fatalf("Failed to create client: %v\n", err)
 	}
 	defer client.Close()
-	timeOfExecution := time.Now()
-	var response DataRequestParam
 
-	err = json.NewDecoder(r.Body).Decode(&response)
+	_, _, err = client.Collection("search").Add(ctx, SavedSearch{timeOfExecution, response.Query, wordCount})
+
 	if err != nil {
-		panic(err)
-	}
-
-	results := getTweets(response)
-
-	tally := make(map[string]int)
-
-	for {
-		for _, tweet := range results.Results {
-			var text string
-			if tweet.ExtendedTweet.FullText != "" {
-				text = tweet.ExtendedTweet.FullText
-			} else {
-				text = tweet.Text
-			}
-			for _, word := range strings.Fields(text) {
-				tally[word] += 1
-			}
-		}
-
-		if results.Next == "" {
-			flippedTally := make(map[int][]string)
-			final := make([]WordCount, 10)
-			for key, value := range tally {
-				flippedTally[value] = append(flippedTally[value], key)
-			}
-
-			keys := make([]int, 0, len(flippedTally))
-
-			for k := range flippedTally {
-				keys = append(keys, k)
-			}
-
-			// sort.Sort(sort.Reverse(sort.IntSlice(keys)))
-			sort.Sort(sort.IntSlice(keys))
-			i := 0
-			for j := len(keys) - 1; j >= 0; j-- {
-				for _, val := range flippedTally[keys[j]] {
-					if i <= 9 {
-						final[i] = WordCount{val, tally[val]}
-						i++
-					}
-				}
-			}
-			_, _, err = client.Collection("search").Add(ctx, SavedSearch{timeOfExecution, response.Query, final})
-			if err != nil {
-				log.Fatalf("Failed to add search: %v\n", err)
-			}
-			return
-		}
-		response.Next = results.Next
-		results = getTweets(response)
+		log.Fatalf("Failed to add search: %v\n", err)
 	}
 }

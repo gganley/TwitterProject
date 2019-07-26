@@ -79,3 +79,22 @@ func getTweets(requestParam DataRequestParam) DataResponse {
 
 	return data
 }
+
+func paginateTwitter(request DataRequestParam) (retVal []Tweet) {
+	results := getTweets(request)
+
+	for {
+		for _, tweet := range results.Results {
+			retVal = append(retVal, tweet)
+		}
+
+		if results.Next != "" {
+			request.Next = results.Next
+			results = getTweets(request)
+		} else {
+			break
+		}
+	}
+
+	return
+}
