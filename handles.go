@@ -95,6 +95,7 @@ func PostSearchHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	saveSearch := SavedSearch{timeOfExecution, response.Query, wordCount}
 	projectID := os.Getenv("PROJECT_ID")
 
 	// Open firestore
@@ -105,9 +106,18 @@ func PostSearchHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	defer client.Close()
 
-	_, _, err = client.Collection("search").Add(ctx, SavedSearch{timeOfExecution, response.Query, wordCount})
+	_, _, err = client.Collection("search").Add(ctx, saveSearch)
 
 	if err != nil {
 		log.Fatalf("Failed to add search: %v\n", err)
 	}
+
+	data, err := json.MarshalIndent(saveSearch, "", "	")
+
+	if err != nil {
+		log.Fatalf("SaveSearch could not be marshalled %s", err)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	fmt.Fprintf(w, "%s\n", data)
 }
