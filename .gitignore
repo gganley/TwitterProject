@@ -14,4 +14,4 @@
 # Ignore the exact package output
 go.sum
 
-client/node_modules/
+node_modules/
