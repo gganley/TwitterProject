@@ -11,6 +11,7 @@ import (
 func main() {
 	r := chi.NewRouter()
 	r.Get("/", RootHandler)
+	http.Handle("/", r)
 	appengine.Main()
 }
 
