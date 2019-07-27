@@ -1,5 +1,5 @@
 <template>
-  <v-app>
+  <v-app id="app">
     <v-app-bar app>
       <v-toolbar-title class="headline text-uppercase">
         <span>Vuetify</span>
@@ -15,16 +15,20 @@
       </v-btn>
     </v-app-bar>
 
+    <v-content>
+      <HelloWorld/>
+    </v-content>
   </v-app>
 </template>
 
 <script lang="ts">
 import Vue from 'vue';
+import HelloWorld from './components/HelloWorld.vue';
 
 export default Vue.extend({
   name: 'App',
-  data: () => ({
-    //
-  }),
+  components: {
+    HelloWorld
+  },
 });
 </script>
