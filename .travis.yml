@@ -16,7 +16,6 @@ notifications:
 #   - go install github.com/golangci/golangci-lint/cmd/golangci-lint
   
 script:
-  - go get -u
   - go build
   # - golangci-lint run
   # - go test -v -race ./...
