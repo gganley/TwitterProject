@@ -1,0 +1,21 @@
+language: go112
+env:
+  - GO111MODULE=on
+  - GOFLAGS='-mod vendor'
+
+go:
+  - 1.12.x
+  
+git:
+  depth: 1
+
+notifications:
+  email: false
+  
+# before_script:
+#   - go isntall github.com/golangci/golangci-lint/cmd/golangci-lint
+  
+script:
+  - go build
+  # - golangci-lint run
+  # - go test -v -race ./...
