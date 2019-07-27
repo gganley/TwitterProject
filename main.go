@@ -1,10 +1,10 @@
 package main
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/go-chi/chi"
-	"google.golang.org/appengine"
 )
 
 func main() {
@@ -14,6 +14,5 @@ func main() {
 		r.Post("/search", PostSearchHandler)
 	})
 
-	http.Handle("/", r)
-	appengine.Main()
+	log.Fatal(http.ListenAndServe(":8080", r))
 }
