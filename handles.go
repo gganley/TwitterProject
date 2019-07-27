@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -14,22 +13,6 @@ import (
 
 	"cloud.google.com/go/firestore"
 )
-
-func RootHandler(w http.ResponseWriter, r *http.Request) {
-	file, err := os.Open("client/dist/index.html")
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer file.Close()
-
-	body, err := ioutil.ReadAll(file)
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	fmt.Fprintln(w, string(body))
-}
 
 func PostSearchHandler(w http.ResponseWriter, r *http.Request) {
 	// Parse query information
