@@ -12,6 +12,8 @@
         </v-btn>
       </template>
     </v-text-field>
+    <v-text-field v-model="start" :rules="[date, required]" label="start"></v-text-field>
+    <v-text-field v-model="stop" :rules="[date, required]" label="stop"></v-text-field>
     <v-data-table :headers="headers" :items="list"> </v-data-table>
   </v-container>
 </template>
@@ -42,14 +44,23 @@ export default class HelloWorld extends Vue {
     new Header("word", "word"),
     new Header("count", "count")
   ];
+start: string = "";
+stop: string = "";
+required(value: string): boolean | string {
+  return !!value || "Required";
+}
+date(value: string): boolean | string {
+const pattern = /20[0,1][0-9][0,1][0-9][0-3][0-9][0-2][0-9][0-5][0-9]/ ;
+return pattern.test(value) || "YYYYMMDDHHmm";
+}
   list: WordCount[] = [];
   getList(): void {
     axios
       .post("/api/search/file", {
         query: this.query,
         maxResults: 100,
-        fromDate: "200806280000",
-        toDate: "201907260000"
+fromDate: this.start,
+toDate: this.stop
       })
       .then(response => {
         this.list = response.data.top_words;

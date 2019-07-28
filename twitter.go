@@ -60,10 +60,11 @@ type WordCount struct {
 }
 
 func getTweetsFromFile(requestParam DataRequestParam) DataResponse {
-	body, err := ioutil.ReadFile("ruby.json")
+	body, err := ioutil.ReadFile(fmt.Sprintf("%s.json", requestParam.Query))
 
 	if err != nil {
-		panic(err)
+		fmt.Errorf("Could not read file %v\n", err)
+		return DataResponse{[]Tweet{}, "", requestParam}
 	}
 
 	var data DataResponse
