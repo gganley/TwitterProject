@@ -122,7 +122,6 @@ func paginateTwitter(request DataRequestParam) <-chan []Tweet {
 		log.Println("paginate goroutine")
 		for i := 0; i < 10; i++ {
 			results := getTweetsFromFile(request)
-			time.Sleep(100 * time.Millisecond)
 			log.Println(i)
 			out <- results.Results
 		}
@@ -156,7 +155,6 @@ func tallyTweets(in <-chan []Tweet) <-chan map[string]int {
 		defer wg.Done()
 		log.Println("working")
 		tally := make(map[string]int)
-		time.Sleep(1000 * time.Millisecond)
 		for _, tweet := range tweets {
 			var text string
 
