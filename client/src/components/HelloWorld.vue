@@ -13,7 +13,6 @@
       </template>
     </v-text-field>
     <v-data-table :headers="headers" :items="list"> </v-data-table>
-    {{ this.list }}
   </v-container>
 </template>
 
