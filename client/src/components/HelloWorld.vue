@@ -47,9 +47,9 @@ export default class HelloWorld extends Vue {
   getList(): void {
     axios
       .post("/api/search", {
-        query: "from:TwitterDev lang:en",
+        query: this.query,
         maxResults: 100,
-        fromDate: "201906280000",
+        fromDate: "200806280000",
         toDate: "201907260000"
       })
       .then(response => {
