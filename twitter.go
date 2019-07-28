@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"os"
 	"sort"
@@ -76,9 +75,8 @@ func getTweetsFromFile(requestParam DataRequestParam) DataResponse {
 	}
 	return data
 }
-func getTweets(requestParam DataRequestParam) DataResponse {
+func getTweets(searchURL string, requestParam DataRequestParam) DataResponse {
 	bearerToken := os.Getenv("BEARER_TOKEN")
-	url := "https://api.twitter.com/1.1/tweets/search/fullarchive/decfull.json"
 
 	body, err := json.Marshal(&requestParam)
 
@@ -88,7 +86,7 @@ func getTweets(requestParam DataRequestParam) DataResponse {
 
 	client := http.Client{}
 
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(body))
+	req, err := http.NewRequest("POST", searchURL, bytes.NewBuffer(body))
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %v", bearerToken))
 	req.Header.Set("Content-Type", "application/json")
 
@@ -115,33 +113,33 @@ func getTweets(requestParam DataRequestParam) DataResponse {
 	return data
 }
 
-func paginateTwitter(request DataRequestParam) <-chan []Tweet {
+func paginateTwitter(searchURL string, request DataRequestParam) <-chan []Tweet {
 	out := make(chan []Tweet, 8)
 
 	go func(request DataRequestParam) {
-		log.Println("paginate goroutine")
-		for i := 0; i < 10; i++ {
-			results := getTweetsFromFile(request)
-			log.Println(i)
+		results := getTweets(searchURL, request)
+		for {
 			out <- results.Results
+			if results.Next != "" {
+				request.Next = results.Next
+				results = getTweets(searchURL, request)
+			} else {
+				close(out)
+				return
+			}
 		}
-		log.Println("Closing")
+	}(request)
+
+	return out
+}
+
+func paginateLocalFile(request DataRequestParam) <-chan []Tweet {
+	out := make(chan []Tweet, 8)
+
+	go func(request DataRequestParam) {
+		results := getTweetsFromFile(request)
+		out <- results.Results
 		close(out)
-		// for {
-		// 	log.Println("About to put on channel")
-		// 	out <- results.Results
-		// 	log.Println("Put on channel")
-		// 	if results.Next != "" {
-		// 		log.Println("More to go")
-		// 		request.Next = results.Next
-		// 		results = getTweets(request)
-		// 	} else {
-		// 		log.Println("Thats it closing")
-		// 		close(out)
-		// 		log.Println("closed")
-		// 		return
-		// 	}
-		// }
 	}(request)
 
 	return out
@@ -153,7 +151,6 @@ func tallyTweets(in <-chan []Tweet) <-chan map[string]int {
 
 	work := func(tweets []Tweet) {
 		defer wg.Done()
-		log.Println("working")
 		tally := make(map[string]int)
 		for _, tweet := range tweets {
 			var text string
@@ -170,19 +167,16 @@ func tallyTweets(in <-chan []Tweet) <-chan map[string]int {
 				tally[word]++
 			}
 		}
-		log.Println("Done working")
 		out <- tally
 	}
 
 	for tweets := range in {
-		log.Println("about to work")
 		wg.Add(1)
 		go work(tweets)
 	}
 
 	go func() {
 		wg.Wait()
-		log.Println("Closing tally")
 		close(out)
 	}()
 

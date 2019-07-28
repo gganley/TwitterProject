@@ -46,7 +46,7 @@ export default class HelloWorld extends Vue {
   list: WordCount[] = [];
   getList(): void {
     axios
-      .post("/api/search", {
+      .post("/api/search/file", {
         query: this.query,
         maxResults: 100,
         fromDate: "200806280000",
