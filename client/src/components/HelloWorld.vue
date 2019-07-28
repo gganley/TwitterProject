@@ -1,5 +1,6 @@
 <template>
   <v-container>
+    <v-combobox v-model="select" :items="items" label="Where do you want to search"></v-combobox>
     <v-text-field
       label="Label"
       color="primary"
@@ -46,6 +47,11 @@ export default class HelloWorld extends Vue {
   ];
 start: string = "";
 stop: string = "";
+select: string = "file";
+items: string[] = [
+"30day",
+"fullarchive"
+];
 required(value: string): boolean | string {
   return !!value || "Required";
 }
@@ -56,7 +62,7 @@ return pattern.test(value) || "YYYYMMDDHHmm";
   list: WordCount[] = [];
   getList(): void {
     axios
-      .post("/api/search/file", {
+      .post("/api/search/" + this.select, {
         query: this.query,
         maxResults: 100,
 fromDate: this.start,
