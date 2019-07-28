@@ -7,8 +7,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"sort"
-	"strings"
 	"time"
 
 	"cloud.google.com/go/firestore"
@@ -24,59 +22,11 @@ func PostSearchHandler(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 
-	// Get tweets
-	results := paginateTwitter(response)
+	in := paginateTwitter(response)
 
-	tally := make(map[string]int)
+	tallyed := tallyTweets(in)
 
-	// Paginate
-	for _, tweet := range results {
-		var text string
-
-		// So twitter decided to go from 140 char limit to a 240 char limit. Instead of versioning their API they
-		// decided it would be easier to add an embedded field. This is easy to deal with in weakly typed language
-		// but makes it annoying in Go
-		if tweet.ExtendedTweet.FullText != "" {
-			text = tweet.ExtendedTweet.FullText
-		} else {
-			text = tweet.Text
-		}
-
-		for _, word := range strings.Fields(text) {
-			tally[word] += 1
-		}
-	}
-
-	// Flip the tally. The value is the list of words that occur the key's number of times
-	flippedTally := make(map[int][]string)
-
-	for key, value := range tally {
-		flippedTally[value] = append(flippedTally[value], key)
-	}
-
-	keys := make([]int, 0, len(flippedTally))
-
-	for k := range flippedTally {
-		keys = append(keys, k)
-	}
-
-	// I coudn't find a way to range through a reverse sorted int slice so I had to sort it then index through it reverse
-	sort.Sort(sort.IntSlice(keys))
-
-	// i keeps track of the fact that I'm only tracking 10 words, so if there are 11 words that occur the equal,
-	// greatest amount then they will be the only ones included
-	i := 0
-	// This is initiated to 10 so that even if there are 9 words it won't mess with indexing
-	wordCount := make([]WordCount, 10)
-
-	for j := len(keys) - 1; j >= 0; j-- {
-		for _, val := range flippedTally[keys[j]] {
-			if i <= 9 {
-				wordCount[i] = WordCount{val, tally[val]}
-				i++
-			}
-		}
-	}
+	wordCount := aggragate(tallyed)
 
 	saveSearch := SavedSearch{timeOfExecution, response.Query, wordCount}
 	projectID := os.Getenv("PROJECT_ID")
