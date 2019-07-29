@@ -3,9 +3,12 @@ package main
 import (
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/go-chi/chi"
 )
+
+var PORT = os.Getenv("PORT")
 
 func main() {
 	r := chi.NewRouter()
@@ -16,5 +19,5 @@ func main() {
 		r.Post("/file", SearchLocalFileHandler)
 	})
 
-	log.Fatal(http.ListenAndServe(":8080", r))
+	log.Fatal(http.ListenAndServe(":"+PORT, r))
 }
