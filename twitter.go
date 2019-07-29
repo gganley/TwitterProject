@@ -13,8 +13,6 @@ import (
 	"time"
 )
 
-var BEARER_TOKEN = os.Getenv("BEARER_TOKEN")
-
 type Tweet struct {
 	CreatedAt     string        `json:"created_at"`
 	Id            int           `json:"id"`
