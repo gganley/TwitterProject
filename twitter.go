@@ -13,13 +13,7 @@ import (
 	"time"
 )
 
-var TWITTER_API_KEY = os.Getenv("TWITTER_API_KEY")
-var TWITTER_API_SECRET = os.Getenv("TWITTER_API_SECRET")
-var TWITTER_ACCESS_TOKEN = os.Getenv("TWITTER_ACCESS_TOKEN")
-var TWITTER_ACCESS_TOKEN_SECRET = os.Getenv("TWITTER_ACCESS_TOKEN_SECRET")
-var OAUTH_SIGNING_KEY = TWITTER_API_SECRET + TWITTER_ACCESS_TOKEN_SECRET
 var BEARER_TOKEN = os.Getenv("BEARER_TOKEN")
-var NPROC = 8
 
 type Tweet struct {
 	CreatedAt     string        `json:"created_at"`
@@ -63,7 +57,7 @@ func getTweetsFromFile(requestParam DataRequestParam) DataResponse {
 	body, err := ioutil.ReadFile(fmt.Sprintf("%s.json", requestParam.Query))
 
 	if err != nil {
-		fmt.Errorf("Could not read file %v\n", err)
+		_ = fmt.Errorf("Could not read file %v\n", err)
 		return DataResponse{[]Tweet{}, "", requestParam}
 	}
 
@@ -88,6 +82,11 @@ func getTweets(searchURL string, requestParam DataRequestParam) DataResponse {
 	client := http.Client{}
 
 	req, err := http.NewRequest("POST", searchURL, bytes.NewBuffer(body))
+
+	if err != nil {
+		panic(err)
+	}
+
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %v", bearerToken))
 	req.Header.Set("Content-Type", "application/json")
 
@@ -207,7 +206,7 @@ func aggragate(in <-chan map[string]int) []WordCount {
 	}
 
 	// I coudn't find a way to range through a reverse sorted int slice so I had to sort it then index through it reverse
-	sort.Sort(sort.IntSlice(keys))
+	sort.Ints(keys)
 
 	// i keeps track of the fact that I'm only tracking 10 words, so if there are 11 words that occur the equal,
 	// greatest amount then they will be the only ones included
