@@ -71,6 +71,10 @@ func getTweetsFromFile(requestParam DataRequestParam) DataResponse {
 func getTweets(searchURL string, requestParam DataRequestParam) DataResponse {
 	bearerToken := os.Getenv("BEARER_TOKEN")
 
+	if bearerToken == "" {
+		fatal("Please set the BEARER_TOKEN env variable")
+	}
+	
 	body, err := json.Marshal(&requestParam)
 
 	if err != nil {
