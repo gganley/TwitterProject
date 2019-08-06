@@ -61,7 +61,7 @@ func getTweetsFromFile(requestParam DataRequestParam) DataResponse {
 	body, err := ioutil.ReadFile(fmt.Sprintf("%s.json", requestParam.Query))
 
 	if err != nil {
-		_ = fmt.Errorf("Could not read file %v\n", err)
+		_ = fmt.Errorf("could not read file %v", err)
 		return DataResponse{[]Tweet{}, "", requestParam}
 	}
 
