@@ -16,8 +16,8 @@ import (
 // Tweet is the listed structure accourding to link
 type Tweet struct {
 	CreatedAt     string        `json:"created_at"`
-	Id            int           `json:"id"`
-	IdStr         string        `json:"id_str"`    // In the documentation it says to use this since a 64bit signed int conversion can get harry https://developer.twitter.com/en/docs/tweets/data-dictionary/overview/tweet-object
+	ID            int           `json:"id"`
+	IDStr         string        `json:"id_str"`    // In the documentation it says to use this since a 64bit signed int conversion can get harry https://developer.twitter.com/en/docs/tweets/data-dictionary/overview/tweet-object
 	Text          string        `json:"text"`      // 0-120 chars, not full 240. Full UTF-8, something to consider if we're counting chars https://github.com/twitter/twitter-text/blob/master/rb/lib/twitter-text/regex.rb
 	Truncated     bool          `json:"truncated"` // compensates for new 240 char limit
 	ExtendedTweet ExtendedTweet `json:"extended_tweet,omitempty"`
