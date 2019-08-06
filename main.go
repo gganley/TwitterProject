@@ -8,6 +8,7 @@ import (
 	"github.com/go-chi/chi"
 )
 
+// PORT is assigned to the environment variable of the same name otherwise it defaults to 8080
 var PORT = os.Getenv("PORT")
 
 func main() {

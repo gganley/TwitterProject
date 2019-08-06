@@ -12,6 +12,7 @@ import (
 	"cloud.google.com/go/firestore"
 )
 
+// APISearchHandler allows for searching using either the 30Day search or the Full Archive search
 func APISearchHandler(searchURL string, w http.ResponseWriter, r *http.Request) {
 	// Parse query information
 	timeOfExecution := time.Now()
@@ -55,14 +56,17 @@ func APISearchHandler(searchURL string, w http.ResponseWriter, r *http.Request) 
 	fmt.Fprintf(w, "%s\n", data)
 }
 
+// SearchFullArchiveHandler is given to /api/search/fullarchive
 func SearchFullArchiveHandler(w http.ResponseWriter, r *http.Request) {
 	APISearchHandler("https://api.twitter.com/1.1/tweets/search/fullarchive/decfull.json", w, r)
 }
 
+// Search30DayHandler is given to /api/search/30day
 func Search30DayHandler(w http.ResponseWriter, r *http.Request) {
 	APISearchHandler("https://api.twitter.com/1.1/tweets/search/30day/dev.json", w, r)
 }
 
+// SearchLocalFileHandler is a complete hack that I had to rought on this earth when I ran out of twitter API requests
 func SearchLocalFileHandler(w http.ResponseWriter, r *http.Request) {
 	timeOfExecution := time.Now()
 	var response DataRequestParam

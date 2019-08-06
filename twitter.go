@@ -13,6 +13,7 @@ import (
 	"time"
 )
 
+// Tweet is the listed structure accourding to link
 type Tweet struct {
 	CreatedAt     string        `json:"created_at"`
 	Id            int           `json:"id"`
@@ -22,10 +23,12 @@ type Tweet struct {
 	ExtendedTweet ExtendedTweet `json:"extended_tweet,omitempty"`
 }
 
+// ExtendedTweet allows for the access of the `full_text` subfield that contains the 240 char
 type ExtendedTweet struct {
 	FullText string `json:"full_text"` // This is the full 240 chars, UTF-8
 }
 
+// DataRequestParam contains the information needed to perform a search request
 type DataRequestParam struct {
 	Query      string `json:"query"`
 	FromDate   string `json:"fromDate"`   // YYYYMMDDHHmm
@@ -34,18 +37,21 @@ type DataRequestParam struct {
 	Next       string `json:"next,omitempty"`
 }
 
+// DataResponse is the response from twitter containing the data and the next request parameters to use
 type DataResponse struct {
 	Results           []Tweet          `json:"results"`
 	Next              string           `json:"next,omitempty"` // When this is not present that means there are no more tweets to ask for
 	RequestParameters DataRequestParam `json:"requestParameters,omitempty"`
 }
 
+// SavedSearch is the structure that is saved in the datastore
 type SavedSearch struct {
 	TimeOfSearch time.Time   `json:"time_of_search"`
 	SearchQuery  string      `json:"query"`
 	TopWords     []WordCount `json:"top_words"`
 }
 
+// WordCount is a simple tuple of the word and the number of times it occurs in the list of tweets
 type WordCount struct {
 	Word  string `json:"word"`
 	Count int    `json:"count"`
