@@ -80,7 +80,7 @@ func getTweets(searchURL string, requestParam DataRequestParam) DataResponse {
 	if bearerToken == "" {
 		panic("Please set the BEARER_TOKEN env variable")
 	}
-	
+
 	body, err := json.Marshal(&requestParam)
 
 	if err != nil {
