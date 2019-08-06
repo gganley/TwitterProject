@@ -20,5 +20,8 @@ func main() {
 		r.Post("/file", SearchLocalFileHandler)
 	})
 
+	if PORT == "" {
+		PORT = "8080"
+	}
 	log.Fatal(http.ListenAndServe(":"+PORT, r))
 }
