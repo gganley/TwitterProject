@@ -1,1 +1,1 @@
-[![Travis](https://travis-ci.com/gganley/TwitterProject.svg?branch=master)](https://travis-ci.com/gganley/TwitterProject)
+This was an interview for my first job. Keeping to cringe at.
